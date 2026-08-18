@@ -268,47 +268,60 @@ export const DashboardView = ({ documents, complianceRecords, onNavigateTab, use
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/80 font-sans">
-                {documents.slice(0, 5).map((doc) => (
-                  <tr key={doc.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="p-3">
-                      <div className="font-bold text-white flex items-center gap-1.5">
-                        <span>{doc.title}</span>
-                        <span className="text-[10px] font-mono text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">
-                          {doc.version || 'v1.0'}
+                {documents.slice(0, 5).map((doc) => {
+                  const displayTitle = doc.title || doc.name || doc.fileName || `Document ${doc.id}`;
+                  const displayDept = doc.department || 'Operations & Safety';
+                  const displayUploader = doc.uploadedBy || doc.uploader || 'Department Officer';
+
+                  return (
+                    <tr key={doc.id} className="hover:bg-slate-800/40 transition-colors">
+                      <td className="p-3">
+                        <div className="font-bold text-white flex items-center gap-2 flex-wrap">
+                          <span>{displayTitle}</span>
+                          <span className="text-[10px] font-mono text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20 whitespace-nowrap">
+                            {doc.version || 'v1.0'}
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span className="text-slate-500">{doc.id}</span>
+                          {doc.fileName && (
+                            <>
+                              <span>•</span>
+                              <span className="text-slate-400">{doc.fileName}</span>
+                            </>
+                          )}
+                          <span>•</span>
+                          <span className="text-amber-400 font-sans font-semibold">By: {displayUploader}</span>
+                        </div>
+                      </td>
+
+                      <td className="p-3">
+                        <span className="bg-slate-800 text-slate-200 px-2.5 py-1 rounded text-[10px] font-semibold border border-slate-700 whitespace-nowrap inline-block">
+                          {displayDept}
                         </span>
-                      </div>
-                      <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1 mt-0.5">
-                        <span>{doc.id}</span>
-                        <span>•</span>
-                        <span>{doc.fileName}</span>
-                        <span>•</span>
-                        <span className="text-amber-400/90 font-sans font-semibold">By: {doc.uploadedBy || doc.uploader || 'Department Officer'}</span>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <span className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded text-[10px] font-semibold border border-slate-700">
-                        {doc.department}
-                      </span>
-                    </td>
-                    <td className="p-3 text-slate-400">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
-                        <span className="truncate max-w-[120px]">{doc.stationName || 'KMRL HQ'}</span>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                        doc.status === 'Approved'
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                          : doc.status === 'SLA Breached'
-                          ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse'
-                          : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                      }`}>
-                        {doc.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+
+                      <td className="p-3 text-slate-400">
+                        <div className="flex items-center gap-1 whitespace-nowrap">
+                          <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
+                          <span>{doc.stationName || 'KMRL HQ'}</span>
+                        </div>
+                      </td>
+
+                      <td className="p-3">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border whitespace-nowrap inline-block ${
+                          doc.status === 'Approved'
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                            : doc.status === 'SLA Breached'
+                            ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse'
+                            : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                        }`}>
+                          {doc.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

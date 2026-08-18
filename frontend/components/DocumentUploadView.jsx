@@ -359,6 +359,18 @@ SLA Workflow: Stage 1 Section Officer -> Stage 2 Joint GM Finance -> Stage 3 Man
       let wfResult = null;
       try {
         wfResult = await initiateWorkflow(wfPayload);
+
+        // Auto-create compliance audit record for Compliance Officer Dashboard sync
+        createComplianceRecord({
+          title: targetTitle,
+          regulationType: fileType || 'Statutory Clearance',
+          department: dept,
+          officer: uploaderName || 'Compliance Officer',
+          status: 'Under Review',
+          auditDate: new Date().toISOString().split('T')[0],
+          notes: `Statutory compliance audit entry generated for ${targetTitle}. Version: ${currentDoc?.version || 'v1.0'}`
+        }).catch(console.error);
+
       } catch (wfErr) {
         console.error('[Workflow Gateway Error Detail]', {
           endpoint: '/api/workflows/initiate',
@@ -410,9 +422,19 @@ SLA Workflow: Stage 1 Section Officer -> Stage 2 Joint GM Finance -> Stage 3 Man
 
       if (onDocumentUpdated) onDocumentUpdated(updatedDocState);
 
-      // Automatically navigate to Workflows & Approvals tab upon workflow initiation
+      // Automatically navigate to My Documents or Workflows & Approvals based on role permissions
       if (onNavigateTab) {
-        onNavigateTab('workflows');
+        let userRole = '';
+        try {
+          const uJson = localStorage.getItem('kmrl_logged_user');
+          if (uJson) userRole = JSON.parse(uJson).role;
+        } catch (e) {}
+
+        if (userRole === 'User' || userRole === 'Compliance Officer') {
+          onNavigateTab('my-documents');
+        } else {
+          onNavigateTab('workflows');
+        }
       }
 
       // Reset form state for clean future uploads

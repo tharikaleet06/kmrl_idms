@@ -2,8 +2,8 @@ package com.kmrl.auth.service;
 
 import com.kmrl.auth.entity.User;
 import com.kmrl.auth.repository.UserRepository;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -12,45 +12,28 @@ import java.util.*;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AuthService(UserRepository userRepository) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-    }
-
-    @PostConstruct
-    public void seedUsers() {
-        if (userRepository.count() == 0) {
-            userRepository.save(new User("usr-1", "Admin User", "admin@kmrl.co.in", hashPassword("password123"), "Admin", "Operations", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150", "Active"));
-            userRepository.save(new User("usr-2", "Department Officer", "officer@kmrl.co.in", hashPassword("password123"), "Department Officer", "Civil Works", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150", "Active"));
-            userRepository.save(new User("usr-3", "Operations Manager", "manager@kmrl.co.in", hashPassword("password123"), "Manager", "Operations", "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150", "Active"));
-            userRepository.save(new User("usr-4", "Compliance Officer", "compliance@kmrl.co.in", hashPassword("password123"), "Compliance Officer", "Legal & Regulatory", "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150", "Active"));
-            userRepository.save(new User("usr-5", "Standard User", "user@kmrl.co.in", hashPassword("password123"), "User", "Operations", "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150", "Active"));
-        }
+        this.passwordEncoder = passwordEncoder;
     }
 
     private String hashPassword(String password) {
         if (password == null || password.isEmpty()) return password;
-        if (password.startsWith("SHA256:")) return password;
-        try {
-            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder("SHA256:");
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (Exception e) {
+        if (password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$")) {
             return password;
         }
+        return passwordEncoder.encode(password);
     }
 
     private boolean verifyPassword(String rawPassword, String storedPassword) {
-        if (storedPassword == null) return false;
-        if (storedPassword.equals(rawPassword)) return true;
-        return storedPassword.equals(hashPassword(rawPassword));
+        if (storedPassword == null || rawPassword == null) return false;
+        if (storedPassword.startsWith("$2a$") || storedPassword.startsWith("$2b$") || storedPassword.startsWith("$2y$")) {
+            return passwordEncoder.matches(rawPassword, storedPassword);
+        }
+        return storedPassword.equals(rawPassword) || passwordEncoder.matches(rawPassword, passwordEncoder.encode(storedPassword));
     }
 
     public Map<String, Object> authenticate(String email, String password) {
@@ -64,31 +47,21 @@ public class AuthService {
         String cleanEmail = email.trim().toLowerCase();
         Optional<User> found = userRepository.findByEmailIgnoreCase(cleanEmail);
 
-        User user;
-        if (found.isPresent()) {
-            user = found.get();
-            if (!verifyPassword(password, user.getPassword())) {
-                throw new IllegalArgumentException("Invalid email or password. Please check your credentials.");
-            }
-        } else {
-            String role = "User";
-            if (cleanEmail.contains("admin")) role = "Admin";
-            else if (cleanEmail.contains("manager")) role = "Manager";
-            else if (cleanEmail.contains("compliance")) role = "Compliance Officer";
-            else if (cleanEmail.contains("officer")) role = "Department Officer";
-
-            String department = "Operations";
-            if ("Compliance Officer".equals(role)) department = "Legal & Regulatory";
-            else if ("Department Officer".equals(role)) department = "Civil Works";
-
-            String nameParts = cleanEmail.split("@")[0].replace(".", " ");
-            String name = nameParts.substring(0, 1).toUpperCase() + nameParts.substring(1);
-
-            user = new User("usr-" + System.currentTimeMillis(), name, cleanEmail, hashPassword(password), role, department, "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150", "Active");
-            userRepository.save(user);
+        if (!found.isPresent()) {
+            throw new IllegalArgumentException("Authentication failed: User account not found in database.");
         }
 
-        String token = "kmrl_jwt_" + Base64.getEncoder().encodeToString(user.getEmail().getBytes()) + "_" + System.currentTimeMillis();
+        User user = found.get();
+        if (!verifyPassword(password, user.getPassword())) {
+            throw new IllegalArgumentException("Authentication failed: Invalid credentials.");
+        }
+
+        // Generate JWT Token payload containing authenticated user claims
+        String payload = String.format(
+            "{\"sub\":\"%s\",\"userId\":\"%s\",\"name\":\"%s\",\"role\":\"%s\",\"department\":\"%s\",\"iat\":%d}",
+            user.getEmail(), user.getId(), user.getName(), user.getRole(), user.getDepartment(), System.currentTimeMillis() / 1000
+        );
+        String token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." + Base64.getEncoder().encodeToString(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8)) + ".KMRL_SECURE_SIG";
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);

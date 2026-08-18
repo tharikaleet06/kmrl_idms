@@ -1,5 +1,0 @@
-com/kmrl/auth/AuthServiceApplication.class
-com/kmrl/auth/repository/UserRepository.class
-com/kmrl/auth/service/AuthService.class
-com/kmrl/auth/entity/User.class
-com/kmrl/auth/controller/AuthController.class

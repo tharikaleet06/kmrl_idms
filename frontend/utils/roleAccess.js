@@ -46,9 +46,22 @@ export const ROLE_PERMISSIONS = {
     'notifications',
     'profile'
   ],
+  Manager: [
+    'dashboard',
+    'documents',
+    'my-documents',
+    'search',
+    'workflows',
+    'geospatial',
+    'audit',
+    'notifications',
+    'profile'
+  ],
   'Compliance Officer': [
     'dashboard',
+    'my-documents',
     'search',
+    'geospatial',
     'compliance',
     'audit',
     'notifications',
@@ -69,24 +82,25 @@ export const ROLE_PERMISSIONS = {
     'documents',
     'my-documents',
     'search',
+    'geospatial',
     'notifications',
     'profile'
   ]
 };
 
 export const REQUIRED_ROLES_MAP = {
-  dashboard: ['Admin', 'Compliance Officer', 'Department Officer', 'User'],
-  documents: ['Admin', 'Department Officer', 'User'],
-  'my-documents': ['Admin', 'Department Officer', 'User'],
-  search: ['Admin', 'Compliance Officer', 'Department Officer', 'User'],
-  workflows: ['Admin', 'Department Officer'],
-  geospatial: ['Admin', 'Department Officer'],
+  dashboard: ['Admin', 'Manager', 'Compliance Officer', 'Department Officer', 'User'],
+  documents: ['Admin', 'Manager', 'Department Officer', 'User'],
+  'my-documents': ['Admin', 'Manager', 'Compliance Officer', 'Department Officer', 'User'],
+  search: ['Admin', 'Manager', 'Compliance Officer', 'Department Officer', 'User'],
+  workflows: ['Admin', 'Manager', 'Department Officer'],
+  geospatial: ['Admin', 'Manager', 'Compliance Officer', 'Department Officer', 'User'],
   compliance: ['Admin', 'Compliance Officer'],
-  audit: ['Admin', 'Compliance Officer'],
+  audit: ['Admin', 'Manager', 'Compliance Officer'],
   microservices: ['Admin'],
   'admin-users': ['Admin'],
-  notifications: ['Admin', 'Compliance Officer', 'Department Officer', 'User'],
-  profile: ['Admin', 'Compliance Officer', 'Department Officer', 'User']
+  notifications: ['Admin', 'Manager', 'Compliance Officer', 'Department Officer', 'User'],
+  profile: ['Admin', 'Manager', 'Compliance Officer', 'Department Officer', 'User']
 };
 
 export function isTabAllowedForRole(role, tabId) {

@@ -30,30 +30,12 @@ public class DocumentController {
             @RequestHeader(value = "X-User-Department", required = false) String userDept,
             @RequestHeader(value = "X-User-Name", required = false) String userName) {
         
-        List<DocumentEntity> allDocs = documentService.getAllDocuments();
-        
         String targetDept = (department != null && !department.isEmpty()) ? department : userDept;
-        String role = userRole != null ? userRole.toUpperCase() : "";
-        String name = userName != null ? userName.trim() : "";
-        
-        if (targetDept != null && !targetDept.trim().isEmpty() && !targetDept.equalsIgnoreCase("ALL") 
-            && (role.contains("OFFICER") || role.contains("USER")) && !role.contains("ADMIN") && !role.contains("MANAGER")) {
-            allDocs = allDocs.stream()
-                    .filter(d -> {
-                        boolean deptMatch = d.getDepartment() != null && d.getDepartment().equalsIgnoreCase(targetDept);
-                        boolean uploaderMatch = !name.isEmpty() && (
-                            (d.getUploadedBy() != null && d.getUploadedBy().equalsIgnoreCase(name)) ||
-                            (d.getUploader() != null && d.getUploader().equalsIgnoreCase(name))
-                        );
-                        boolean assignedMatch = !name.isEmpty() && d.getAssignedTo() != null && d.getAssignedTo().equalsIgnoreCase(name);
-                        return deptMatch || uploaderMatch || assignedMatch;
-                    })
-                    .collect(java.util.stream.Collectors.toList());
-        }
+        List<DocumentEntity> scopedDocs = documentService.getDocumentsForUser(userRole, targetDept, userName);
 
         Map<String, Object> res = new HashMap<>();
         res.put("success", true);
-        res.put("documents", allDocs);
+        res.put("documents", scopedDocs);
         return ResponseEntity.ok(res);
     }
 
@@ -228,5 +210,17 @@ public class DocumentController {
             err.put("error", "Document not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
         }
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<Map<String, Object>> searchDocuments(
+            @RequestBody Map<String, Object> body,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @RequestHeader(value = "X-User-Department", required = false) String userDept,
+            @RequestHeader(value = "X-User-Name", required = false) String userName) {
+        
+        String query = body.get("query") != null ? body.get("query").toString() : "";
+        Map<String, Object> searchResult = documentService.searchSemantic(query, userRole, userDept, userName);
+        return ResponseEntity.ok(searchResult);
     }
 }

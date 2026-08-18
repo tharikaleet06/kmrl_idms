@@ -1,6 +1,12 @@
 node_modules/
 build/
 dist/
+target/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+mysql_data/
 coverage/
 .DS_Store
 *.log

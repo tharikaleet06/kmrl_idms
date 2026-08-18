@@ -1,0 +1,48 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "1. Run Python AI Service",
+      "type": "shell",
+      "command": "python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
+      "options": {
+        "cwd": "${workspaceFolder}/ai-service"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "2. Run Spring Boot Backend",
+      "type": "shell",
+      "command": "mvn spring-boot:run -f backend/pom.xml -pl service-registry & sleep 5; mvn spring-boot:run -f backend/pom.xml -pl api-gateway & mvn spring-boot:run -f backend/pom.xml -pl auth-service & mvn spring-boot:run -f backend/pom.xml -pl document-service & mvn spring-boot:run -f backend/pom.xml -pl workflow-service & mvn spring-boot:run -f backend/pom.xml -pl compliance-service & mvn spring-boot:run -f backend/pom.xml -pl dashboard-service & mvn spring-boot:run -f backend/pom.xml -pl geospatial-service",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "3. Run React Frontend",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Run All Services (KMRL-IDMS)",
+      "type": "shell",
+      "command": "./start-services.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

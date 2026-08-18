@@ -26,17 +26,11 @@ public class DashboardService {
 
     @PostConstruct
     public void initData() {
-        if (auditLogRepository.count() == 0) {
-            logAudit("admin@kmrl.co.in", "SYSTEM_INIT", "KMRL IDMS Microservices System Initialized");
-            logAudit("officer@kmrl.co.in", "DOCUMENT_UPLOAD", "Uploaded Phase II Water Metro Clearance Report");
-            logAudit("compliance@kmrl.co.in", "WORKFLOW_APPROVE", "Approved Statutory CMRS Track Inspection Clearance");
-        }
-
         List<Map<String, Object>> depts = new ArrayList<>();
-        depts.add(Map.of("id", "dept-1", "name", "Civil Works", "code", "CIVIL", "lead", "Rajesh Kumar"));
-        depts.add(Map.of("id", "dept-2", "name", "Operations & Safety", "code", "OPS", "lead", "Anita Sharma"));
-        depts.add(Map.of("id", "dept-3", "name", "Finance & Legal", "code", "FIN", "lead", "Suresh Menon"));
-        depts.add(Map.of("id", "dept-4", "name", "Signaling & Telecom", "code", "SIG", "lead", "Priya Nair"));
+        depts.add(Map.of("id", "dept-1", "name", "Civil Works", "code", "CIVIL", "lead", "Department Head"));
+        depts.add(Map.of("id", "dept-2", "name", "Operations & Safety", "code", "OPS", "lead", "Department Head"));
+        depts.add(Map.of("id", "dept-3", "name", "Finance & Legal", "code", "FIN", "lead", "Department Head"));
+        depts.add(Map.of("id", "dept-4", "name", "Signaling & Telecom", "code", "SIG", "lead", "Department Head"));
 
         List<Map<String, Object>> cats = new ArrayList<>();
         cats.add(Map.of("id", "cat-1", "name", "Technical Specification", "slaHours", 24, "retentionYears", 10));
@@ -88,44 +82,56 @@ public class DashboardService {
             Integer docCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM documents", Integer.class);
             if (docCount != null) totalDocs = docCount;
         } catch (Exception e) {
-            totalDocs = 7;
+            totalDocs = 0;
         }
 
         try {
             Integer pendingCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM workflow_tasks WHERE status NOT IN ('Approved', 'Completed')", Integer.class);
             if (pendingCount != null) pendingApprovals = pendingCount;
         } catch (Exception e) {
-            pendingApprovals = 2;
+            pendingApprovals = 0;
         }
 
         try {
             Integer wfCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM workflow_tasks", Integer.class);
             if (wfCount != null) activeWorkflows = wfCount;
         } catch (Exception e) {
-            activeWorkflows = 10;
+            activeWorkflows = 0;
         }
 
         try {
             Integer breachCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM workflow_tasks WHERE status = 'SLA Breached'", Integer.class);
             if (breachCount != null) slaBreaches = breachCount;
         } catch (Exception e) {
-            slaBreaches = 1;
+            slaBreaches = 0;
         }
 
         metrics.put("totalDocuments", totalDocs);
         metrics.put("pendingApprovals", pendingApprovals);
         metrics.put("activeWorkflows", activeWorkflows);
-        metrics.put("complianceRate", 98.4);
+        metrics.put("complianceRate", totalDocs > 0 ? roundOneDec(100.0 - (slaBreaches * 100.0 / totalDocs)) : 100.0);
         metrics.put("slaBreaches", slaBreaches);
 
         List<Map<String, Object>> departmentStats = new ArrayList<>();
-        departmentStats.add(Map.of("department", "Civil Works", "documents", Math.max(1, totalDocs / 3), "pending", Math.max(1, pendingApprovals / 2)));
-        departmentStats.add(Map.of("department", "Safety & Security", "documents", Math.max(1, totalDocs / 4), "pending", 1));
-        departmentStats.add(Map.of("department", "Operations", "documents", Math.max(1, totalDocs / 4), "pending", 1));
-        departmentStats.add(Map.of("department", "Finance & Legal", "documents", Math.max(1, totalDocs / 6), "pending", 0));
+        try {
+            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                "SELECT department, COUNT(*) as count FROM documents GROUP BY department"
+            );
+            for (Map<String, Object> row : rows) {
+                String dName = row.get("department") != null ? row.get("department").toString() : "Unassigned";
+                Number cnt = (Number) row.get("count");
+                departmentStats.add(Map.of("department", dName, "documents", cnt != null ? cnt.intValue() : 0, "pending", 0));
+            }
+        } catch (Exception e) {
+            // Keep empty list if table not yet populated
+        }
 
         metrics.put("departmentStats", departmentStats);
         return metrics;
+    }
+
+    private double roundOneDec(double val) {
+        return Math.round(val * 10.0) / 10.0;
     }
 
     public Map<String, Object> getSystemConfig() {

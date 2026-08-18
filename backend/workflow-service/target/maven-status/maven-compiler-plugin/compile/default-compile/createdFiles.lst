@@ -1,5 +1,0 @@
-com/kmrl/workflow/entity/WorkflowTask.class
-com/kmrl/workflow/controller/WorkflowController.class
-com/kmrl/workflow/repository/WorkflowRepository.class
-com/kmrl/workflow/service/WorkflowService.class
-com/kmrl/workflow/WorkflowServiceApplication.class

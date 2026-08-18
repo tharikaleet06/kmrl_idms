@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, AlertCircle, Clock, Building2, CheckCircle2, Plus, Search, Filter, RefreshCw, X, ShieldAlert, FileText } from 'lucide-react';
 import { fetchComplianceRecords, createComplianceRecord, updateComplianceRecord, requestComplianceReview, markComplianceStatus, createAuditLog } from '../services/api.js';
 
-export const ComplianceView = ({ userRole = 'ADMIN', onToast }) => {
+export const ComplianceView = ({ documents = [], complianceRecords = [], userRole = 'ADMIN', onToast }) => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('All');
@@ -21,13 +21,35 @@ export const ComplianceView = ({ userRole = 'ADMIN', onToast }) => {
 
   useEffect(() => {
     loadRecords();
-  }, []);
+  }, [documents, complianceRecords]);
 
   const loadRecords = async () => {
     setLoading(true);
     try {
       const data = await fetchComplianceRecords();
-      setRecords(data);
+      let combined = Array.isArray(data) ? [...data] : [];
+
+      // Auto-sync documents as compliance records in Compliance Officer Dashboard
+      if (documents && Array.isArray(documents)) {
+        documents.forEach(doc => {
+          if (!combined.some(r => r.id === doc.id || r.title === doc.title)) {
+            combined.push({
+              id: doc.id || `CMP-${Math.floor(100 + Math.random() * 900)}`,
+              title: doc.title,
+              version: doc.version || 'v1.0',
+              regulationType: doc.docType || doc.fileType || 'Statutory Requirement',
+              department: doc.department || 'Operations & Safety',
+              officer: doc.uploadedBy || doc.uploader || 'Compliance Officer',
+              uploadedBy: doc.uploadedBy || doc.uploader || 'Compliance Officer',
+              status: doc.status === 'Approved' ? 'Compliant' : doc.status === 'SLA Breached' ? 'Non-Compliant' : 'Under Review',
+              auditDate: (doc.createdAt || doc.uploadedAt || new Date().toISOString()).split('T')[0],
+              notes: doc.summary || `Statutory compliance audit entry for ${doc.title}. Version: ${doc.version || 'v1.0'}`
+            });
+          }
+        });
+      }
+
+      setRecords(combined);
     } catch (e) {
       console.error('Failed to load compliance records:', e);
     } finally {
@@ -217,10 +239,15 @@ export const ComplianceView = ({ userRole = 'ADMIN', onToast }) => {
             return (
               <div key={item.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4 flex flex-col justify-between">
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded font-bold">
-                      {item.id}
-                    </span>
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded font-bold">
+                        {item.id}
+                      </span>
+                      <span className="text-[10px] font-mono text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 rounded font-bold">
+                        {item.version || 'v1.0'}
+                      </span>
+                    </div>
                     <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
                       isNonComp
                         ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
@@ -235,14 +262,14 @@ export const ComplianceView = ({ userRole = 'ADMIN', onToast }) => {
                   <h3 className="text-sm font-bold text-white">{item.title || item.requirement || item.regulatoryBody}</h3>
                   <p className="text-xs text-slate-300 leading-relaxed">{item.notes || item.requirement}</p>
 
-                  <div className="pt-3 border-t border-slate-800/80 text-xs text-slate-400 space-y-1 font-mono">
-                    <div className="flex justify-between">
-                      <span>Type: <span className="text-slate-200">{item.regulationType || item.regulatoryBody || 'Statutory'}</span></span>
-                      <span>Department: <span className="text-slate-200">{item.department}</span></span>
+                  <div className="pt-3 border-t border-slate-800/80 text-xs text-slate-400 space-y-1.5 font-mono">
+                    <div className="flex justify-between flex-wrap gap-1">
+                      <span>Type: <span className="text-slate-200 font-semibold">{item.regulationType || item.regulatoryBody || 'Statutory'}</span></span>
+                      <span>Department: <span className="text-slate-200 font-semibold">{item.department}</span></span>
                     </div>
-                    <div className="flex justify-between pt-1">
-                      <span>Officer: <span className="text-slate-200">{item.officer || item.assignedOfficer}</span></span>
-                      <span>Audit Date: <span className="text-white">{item.auditDate || item.deadline}</span></span>
+                    <div className="flex justify-between flex-wrap gap-1 pt-0.5">
+                      <span>Uploaded By: <span className="text-amber-300 font-semibold">{item.uploadedBy || item.officer || item.assignedOfficer || 'Compliance Officer'}</span></span>
+                      <span>Audit Date: <span className="text-white font-semibold">{item.auditDate || item.deadline}</span></span>
                     </div>
                   </div>
                 </div>

@@ -1,10 +1,32 @@
 import axios from 'axios';
 
+const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+  ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')}/api`
+  : '/api';
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json'
   }
+});
+
+api.interceptors.request.use((config) => {
+  try {
+    const token = localStorage.getItem('kmrl_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    const userJson = localStorage.getItem('kmrl_logged_user');
+    if (userJson) {
+      const u = JSON.parse(userJson);
+      if (u.role) config.headers['X-User-Role'] = u.role;
+      if (u.department) config.headers['X-User-Department'] = u.department;
+      if (u.name || u.username) config.headers['X-User-Name'] = u.name || u.username;
+      if (u.email) config.headers['X-User-Email'] = u.email;
+    }
+  } catch (e) {}
+  return config;
 });
 
 export async function loginUser(email, password) {
@@ -60,170 +82,6 @@ export async function addCategoryConfig(catData) {
 }
 
 
-const SEED_DOCUMENTS = [
-  {
-    id: 'KMRL-CIVIL-2026-1001',
-    title: 'Phase II Water Metro Terminal Civil Clearance Report',
-    docType: 'Technical Specification',
-    department: 'Civil Works',
-    uploadedBy: 'Department Officer',
-    status: 'Approved',
-    sensitivity: 'Restricted',
-    version: 'v2.1',
-    uploadedAt: '2026-08-01T10:00:00Z',
-    createdAt: '2026-08-01',
-    summary: 'Geospatial and structural foundation feasibility report for Vyttila Water Metro terminal expansion.',
-    rawText: 'Geospatial and structural foundation feasibility report for Vyttila Water Metro terminal expansion.',
-    tags: ['water-metro', 'civil', 'survey'],
-    fileName: 'Water-Metro-Terminal-Report.pdf',
-    fileSize: '4.2 MB',
-    fileType: 'PDF Document',
-    confidenceScore: 98.6,
-    currentStage: 3,
-    totalStages: 3,
-    currentStageName: 'Final Approver / Authorized Officer',
-    workflowStatus: 'Completed'
-  },
-  {
-    id: 'KMRL-SAF-2026-1002',
-    title: 'Statutory CMRS Track Inspection Clearance',
-    docType: 'Safety Certificate',
-    department: 'Operations & Safety',
-    uploadedBy: 'Compliance Officer',
-    status: 'In Review',
-    sensitivity: 'Confidential',
-    version: 'v1.0',
-    uploadedAt: '2026-08-05T14:30:00Z',
-    createdAt: '2026-08-05',
-    summary: 'Commissioner of Metro Railway Safety clearance for Phase 1B Pettah-SN Junction line extension.',
-    rawText: 'Commissioner of Metro Railway Safety clearance for Phase 1B Pettah-SN Junction line extension.',
-    tags: ['cmrs', 'safety', 'clearance'],
-    fileName: 'CMRS-Safety-Inspection.pdf',
-    fileSize: '2.8 MB',
-    fileType: 'PDF Document',
-    confidenceScore: 99.1,
-    currentStage: 1,
-    totalStages: 3,
-    currentStageName: 'Department Officer',
-    workflowStatus: 'In Progress'
-  },
-  {
-    id: 'KMRL-FIN-2026-1003',
-    title: 'Rolling Stock Maintenance Audit Q2 2026',
-    docType: 'Financial Audit Report',
-    department: 'Finance & Legal',
-    uploadedBy: 'Operations Manager',
-    status: 'In Progress',
-    sensitivity: 'Internal',
-    version: 'v1.2',
-    uploadedAt: '2026-08-08T09:15:00Z',
-    createdAt: '2026-08-08',
-    summary: 'Muttom Depot trainset periodic overhaul and component inspection expenditure analysis.',
-    rawText: 'Muttom Depot trainset periodic overhaul and component inspection expenditure analysis.',
-    tags: ['rolling-stock', 'audit', 'finance'],
-    fileName: 'Rolling-Stock-Audit-Q2.pdf',
-    fileSize: '3.1 MB',
-    fileType: 'PDF Document',
-    confidenceScore: 97.4,
-    currentStage: 2,
-    totalStages: 3,
-    currentStageName: 'Joint GM / Department Head',
-    workflowStatus: 'In Progress'
-  },
-  {
-    id: 'KMRL-SIG-2026-1004',
-    title: 'CBTC Signaling & Automatic Train Control System Validation Log',
-    docType: 'Technical Specification',
-    department: 'Signaling & Telecom',
-    uploadedBy: 'Department Officer',
-    status: 'Uploaded',
-    sensitivity: 'Restricted',
-    version: 'v1.0',
-    uploadedAt: '2026-08-10T11:20:00Z',
-    createdAt: '2026-08-10',
-    summary: 'Communication-Based Train Control signaling interlock and telemetry verification test results.',
-    rawText: 'Communication-Based Train Control signaling interlock and telemetry verification test results.',
-    tags: ['cbtc', 'signaling', 'telecom'],
-    fileName: 'CBTC-Signaling-Validation.pdf',
-    fileSize: '5.0 MB',
-    fileType: 'PDF Document',
-    confidenceScore: 99.4,
-    currentStage: 1,
-    totalStages: 3,
-    currentStageName: 'Department Officer',
-    workflowStatus: 'In Progress'
-  },
-  {
-    id: 'KMRL-ELE-2026-1005',
-    title: '33kV Traction Sub-Station Transformer Safety Audit',
-    docType: 'Statutory Regulatory File',
-    department: 'Electrical & Traction',
-    uploadedBy: 'Compliance Officer',
-    status: 'SLA Breached',
-    sensitivity: 'Confidential',
-    version: 'v1.1',
-    uploadedAt: '2026-08-02T16:45:00Z',
-    createdAt: '2026-08-02',
-    summary: 'High voltage auxiliary transformer oil insulation test report for Water Metro jetty charging stations.',
-    rawText: 'High voltage auxiliary transformer oil insulation test report for Water Metro jetty charging stations.',
-    tags: ['transformer', 'traction', 'electrical'],
-    fileName: 'Substation-Safety-Audit.pdf',
-    fileSize: '3.8 MB',
-    fileType: 'PDF Document',
-    confidenceScore: 96.8,
-    currentStage: 1,
-    totalStages: 3,
-    currentStageName: 'Department Officer',
-    workflowStatus: 'In Progress'
-  },
-  {
-    id: 'KMRL-SAF-2026-1006',
-    title: 'Monsoon Disaster Management & Emergency Response Protocol',
-    docType: 'Safety Certificate',
-    department: 'Safety & Security',
-    uploadedBy: 'Operations Manager',
-    status: 'Approved',
-    sensitivity: 'Public',
-    version: 'v3.0',
-    uploadedAt: '2026-08-04T08:00:00Z',
-    createdAt: '2026-08-04',
-    summary: 'Comprehensive flood emergency evacuation guidelines and station high-water barrier protocols.',
-    rawText: 'Comprehensive flood emergency evacuation guidelines and station high-water barrier protocols.',
-    tags: ['monsoon', 'safety', 'emergency'],
-    fileName: 'Monsoon-Emergency-Protocol.pdf',
-    fileSize: '2.1 MB',
-    fileType: 'PDF Document',
-    confidenceScore: 98.9,
-    currentStage: 3,
-    totalStages: 3,
-    currentStageName: 'Final Approver / Authorized Officer',
-    workflowStatus: 'Completed'
-  },
-  {
-    id: 'KMRL-CIVIL-2026-1007',
-    title: 'Kakkanad Extension Viaduct Elastomeric Bearing Inspection',
-    docType: 'Technical Specification',
-    department: 'Civil Works',
-    uploadedBy: 'Department Officer',
-    status: 'Pending Approval',
-    sensitivity: 'Internal',
-    version: 'v1.0',
-    uploadedAt: '2026-08-09T12:00:00Z',
-    createdAt: '2026-08-09',
-    summary: 'Ultrasonic non-destructive foundation testing for Phase-II viaduct pier bearings.',
-    rawText: 'Ultrasonic non-destructive foundation testing for Phase-II viaduct pier bearings.',
-    tags: ['viaduct', 'bearing', 'civil'],
-    fileName: 'Viaduct-Bearing-Inspection.pdf',
-    fileSize: '4.5 MB',
-    fileType: 'PDF Document',
-    confidenceScore: 97.9,
-    currentStage: 1,
-    totalStages: 3,
-    currentStageName: 'Department Officer',
-    workflowStatus: 'In Progress'
-  }
-];
-
 export async function fetchDocuments(params) {
   let customDocs = [];
   try {
@@ -244,21 +102,20 @@ export async function fetchDocuments(params) {
     }
   } catch (e) {}
 
-  let resultDocs = null;
+  let backendDocs = [];
   try {
     const res = await api.get('/documents', { params, headers: userHeaders });
-    const fetched = res.data?.documents || res.data?.data || (Array.isArray(res.data) ? res.data : null);
-    if (fetched && Array.isArray(fetched)) {
-      resultDocs = fetched;
+    const fetched = res.data?.documents || res.data?.data || (Array.isArray(res.data) ? res.data : []);
+    if (Array.isArray(fetched)) {
+      backendDocs = fetched;
     }
   } catch (err) {
-    console.warn('Axios API fetch warning:', err);
+    console.warn('Axios fetchDocuments notice:', err);
   }
 
-  const baseList = resultDocs || SEED_DOCUMENTS;
   const map = new Map();
   customDocs.forEach(d => { if (d && d.id) map.set(d.id, d); });
-  baseList.forEach(d => { if (d && d.id && !map.has(d.id)) map.set(d.id, d); });
+  backendDocs.forEach(d => { if (d && d.id) map.set(d.id, d); });
 
   return Array.from(map.values());
 }

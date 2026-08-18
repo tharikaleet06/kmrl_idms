@@ -1,5 +1,0 @@
-com/kmrl/geospatial/controller/GeospatialController.class
-com/kmrl/geospatial/GeospatialServiceApplication.class
-com/kmrl/geospatial/entity/MetroLocation.class
-com/kmrl/geospatial/service/GeospatialService.class
-com/kmrl/geospatial/repository/LocationRepository.class
