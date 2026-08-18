@@ -1,0 +1,5 @@
+com/kmrl/compliance/controller/ComplianceController.class
+com/kmrl/compliance/service/ComplianceService.class
+com/kmrl/compliance/entity/ComplianceRecord.class
+com/kmrl/compliance/ComplianceServiceApplication.class
+com/kmrl/compliance/repository/ComplianceRepository.class

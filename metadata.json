@@ -1,0 +1,6 @@
+{
+  "name": "KMRL Intelligent Document Management System",
+  "description": "Automated document classification, semantic search, SLA approval workflows, regulatory compliance, geospatial station mapping, and Spring Boot microservice API gateway for Kochi Metro Rail Limited.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

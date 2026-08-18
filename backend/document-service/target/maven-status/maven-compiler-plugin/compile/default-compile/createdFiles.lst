@@ -1,0 +1,6 @@
+com/kmrl/document/entity/DocumentEntity.class
+com/kmrl/document/service/DocumentService.class
+com/kmrl/document/service/AiEvaluationService.class
+com/kmrl/document/DocumentServiceApplication.class
+com/kmrl/document/controller/DocumentController.class
+com/kmrl/document/repository/DocumentRepository.class

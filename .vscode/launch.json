@@ -1,0 +1,100 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "1. Service Registry (Eureka :8761)",
+      "request": "launch",
+      "mainClass": "com.kmrl.registry.ServiceRegistryApplication",
+      "projectName": "service-registry"
+    },
+    {
+      "type": "java",
+      "name": "2. API Gateway (:8080)",
+      "request": "launch",
+      "mainClass": "com.kmrl.gateway.ApiGatewayApplication",
+      "projectName": "api-gateway"
+    },
+    {
+      "type": "java",
+      "name": "3. Auth Service (:8081)",
+      "request": "launch",
+      "mainClass": "com.kmrl.auth.AuthServiceApplication",
+      "projectName": "auth-service",
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "3306",
+        "MYSQL_DATABASE": "kmrl_idms",
+        "MYSQL_USERNAME": "root",
+        "MYSQL_PASSWORD": "password"
+      }
+    },
+    {
+      "type": "java",
+      "name": "4. Document Service (:8082)",
+      "request": "launch",
+      "mainClass": "com.kmrl.document.DocumentServiceApplication",
+      "projectName": "document-service",
+      "env": {
+        "MONGODB_URI": "mongodb://localhost:27017/kmrl_documents",
+        "GEMINI_API_KEY": "${env:GEMINI_API_KEY}"
+      }
+    },
+    {
+      "type": "java",
+      "name": "5. Workflow Service (:8083)",
+      "request": "launch",
+      "mainClass": "com.kmrl.workflow.WorkflowServiceApplication",
+      "projectName": "workflow-service",
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "3306",
+        "MYSQL_DATABASE": "kmrl_idms",
+        "MYSQL_USERNAME": "root",
+        "MYSQL_PASSWORD": "password"
+      }
+    },
+    {
+      "type": "java",
+      "name": "6. Geospatial Service (:8084)",
+      "request": "launch",
+      "mainClass": "com.kmrl.geospatial.GeospatialServiceApplication",
+      "projectName": "geospatial-service",
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "3306",
+        "MYSQL_DATABASE": "kmrl_idms",
+        "MYSQL_USERNAME": "root",
+        "MYSQL_PASSWORD": "password"
+      }
+    },
+    {
+      "type": "java",
+      "name": "7. Compliance Service (:8085)",
+      "request": "launch",
+      "mainClass": "com.kmrl.compliance.ComplianceServiceApplication",
+      "projectName": "compliance-service",
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "3306",
+        "MYSQL_DATABASE": "kmrl_idms",
+        "MYSQL_USERNAME": "root",
+        "MYSQL_PASSWORD": "password"
+      }
+    },
+    {
+      "type": "java",
+      "name": "8. Dashboard Service (:8086)",
+      "request": "launch",
+      "mainClass": "com.kmrl.dashboard.DashboardServiceApplication",
+      "projectName": "dashboard-service",
+      "env": {
+        "MYSQL_HOST": "localhost",
+        "MYSQL_PORT": "3306",
+        "MYSQL_DATABASE": "kmrl_idms",
+        "MYSQL_USERNAME": "root",
+        "MYSQL_PASSWORD": "password"
+      }
+    }
+  ]
+}

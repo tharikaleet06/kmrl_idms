@@ -1,0 +1,49 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+        - id: document-service
+          uri: lb://document-service
+          predicates:
+            - Path=/api/documents/**
+        - id: workflow-service
+          uri: lb://workflow-service
+          predicates:
+            - Path=/api/workflows/**
+        - id: compliance-service
+          uri: lb://compliance-service
+          predicates:
+            - Path=/api/compliance/**
+        - id: dashboard-service
+          uri: lb://dashboard-service
+          predicates:
+            - Path=/api/dashboard/**, /api/admin/**, /api/audit-logs, /api/audit-logs/**, /api/eureka/**, /api/swagger/**
+        - id: geospatial-service
+          uri: lb://geospatial-service
+          predicates:
+            - Path=/api/geospatial/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

@@ -1,0 +1,5 @@
+com/kmrl/dashboard/DashboardServiceApplication.class
+com/kmrl/dashboard/entity/AuditLog.class
+com/kmrl/dashboard/repository/AuditLogRepository.class
+com/kmrl/dashboard/service/DashboardService.class
+com/kmrl/dashboard/controller/DashboardController.class
