@@ -21,7 +21,7 @@ All reference documentation is structured under the [docs](docs/) directory:
 - 🐍 [Python FastAPI AI Microservice Guide](docs/AI_SERVICE_GUIDE.md) — OCR processing, NLP classification, spaCy entity parsing, 384/3072-dim embeddings, vector search security, and Dijkstra route optimization.
 - 🧠 [AI/ML Engine & Model Specifications](docs/AI_MODEL_DOCUMENTATION.md) — Deep technical specification for Google Gemini & PyTesseract perception models and vector similarity pipelines.
 - 🚀 [Setup & Execution Guide](docs/SETUP_RUN_GUIDE.md) — Step-by-step instructions for running the complete system via scripts, VS Code tasks, and verifying service health.
-
+- 🔗 [ER Diagram](docs/KMRL_IDMS%20ER%20Diagram.jpeg) — Entity-Relationship diagram representing the relational database structure and relationships.
 ---
 
 ## 🏗️ System Topology Overview
@@ -110,3 +110,12 @@ chmod +x ./run-all.sh
 ```
 
 Or view the [Setup & Run Guide](./docs/SETUP_RUN_GUIDE.md) for detailed VS Code task runner instructions.
+---
+
+## 🔗 Entity-Relationship Diagram
+
+The ER diagram represents the entities, attributes, and relationships within the KMRL IDMS database.
+
+![KMRL IDMS ER Diagram](docs/KMRL_IDMS%20ER%20Diagram.jpeg)
+
+---
